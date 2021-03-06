@@ -10,6 +10,11 @@ class DeploymentConfig(dict):
     """Class for storing deployment configurations."""
 
     def __init__(self, path: str, dependency_chain=[]):
+        """Initialize a DepencyConfig.
+
+        :raise CircularDependencyException: If there's a circular dependency.
+        """
+
         self["_path"] = path
         self.dependency_chain = dependency_chain
 
@@ -33,15 +38,25 @@ class DeploymentConfig(dict):
         self.from_stack(self["_path"])
 
     @property
-    def path(self):
+    def path(self) -> str:
+        """Get the absolute path of the stack."""
         return self["_path"]
 
     @property
-    def stack(self):
+    def stack(self) -> str:
+        """Get the name of the stack."""
         return os.path.basename(os.path.normpath(self.path))
 
-    def resolve_stack(self, stack) -> str:
-        """Resolve a stack name "relative" to the current stack path."""
+    def resolve_stack(self, stack: str) -> str:
+        """Resolve a stack name "relative" to the current stack path.
+
+        See DeploymentConfig.__init__() for exceptions.
+
+        :param str stack: The name of the stack to resolve.
+
+        :return: The DeploymentConfig of the stack.
+        :rtype: DeploymentConfig
+        """
 
         base = os.path.normpath(os.path.join(self["_path"], ".."))
         stackpath = os.path.join(base, stack)
@@ -51,8 +66,17 @@ class DeploymentConfig(dict):
         tmp = self.dependency_chain.copy()
         return DeploymentConfig(stackpath, tmp)
 
-    def resolve_partial(self, partial) -> str:
-        """Resolve a partial name "relative" to the current stack path."""
+    def resolve_partial(self, partial: str) -> str:
+        """Resolve a partial name "relative" to the current stack path.
+
+        :param str partial: The name of the partial to resolve.
+
+        :return: The absolute path to the partial.
+        :rtype: str
+
+        :raise ValueError: If the partial name format is invalid.
+        :raise FileNotFoundError: If the partial doesn't exist.
+        """
 
         base = os.path.normpath(os.path.join(self["_path"], ".."))
         parts = partial.split("/")
@@ -76,7 +100,16 @@ class DeploymentConfig(dict):
         return partialpath
 
     def from_stack(self, path: str):
-        """Load a config from file."""
+        """Load a config from file.
+
+        :param str path: The path of the stack directory.
+
+        :raise ValueError: If the path is not absolute.
+        :raise FileNotFoundError: If the path doesn't exist.
+        :raise FileNotFoundError: If the stack has no configuration file.
+        :raise KeyError: If the stack config contains prohibited targets.
+        :raise ValueError: If the config file format is invalid.
+        """
 
         path = self["_path"]
         self.clear()
@@ -89,7 +122,6 @@ class DeploymentConfig(dict):
             raise FileNotFoundError("Stack {} doesn't exist.".format(path))
 
         conf_path = os.path.join(path, "deploy.yml")
-
         if not os.path.isfile(conf_path):
             raise FileNotFoundError("No stack config at {}".format(path))
 
@@ -99,7 +131,13 @@ class DeploymentConfig(dict):
             config = load(f, Loader=SafeLoader)
 
         # Validate the config.
-        config = self.schema.validate(config)
+        try:
+            config = self.schema.validate(config)
+        except SchemaError as e:
+            raise ValueError(
+                "Invalid config file {}:\n{}"
+                .format(path, str(e))
+            ) from e
 
         # The path key is used internally and not allowed.
         if "_path" in config:
