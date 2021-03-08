@@ -1,4 +1,5 @@
 """Exceptions for DeploymentConfig."""
 
+
 class CircularDependencyException(Exception):
-    pass
+    """Exception class for circular stack dependencies."""

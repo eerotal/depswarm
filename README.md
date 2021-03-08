@@ -1,4 +1,4 @@
-# depstack - A wrapper for easily deploying Docker Swarm stacks with dependencies.
+# depstack - A wrapper for easily deploying Docker Swarm stacks with dependencies
 
 # Usage
 

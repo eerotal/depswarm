@@ -2,3 +2,8 @@
 __pycache__
 \#*
 .#*
+
+.tox
+dist
+build
+*.egg-info

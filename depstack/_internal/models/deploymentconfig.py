@@ -4,16 +4,20 @@ import os
 from yaml import load, SafeLoader
 from schema import Schema, Use, Optional, SchemaError
 
-from depstack._internal.exceptions.deploymentconfigexceptions import *
+from depstack._internal.exceptions.deploymentconfigexceptions import \
+    CircularDependencyException
+
 
 class DeploymentConfig(dict):
     """Class for storing deployment configurations."""
 
-    def __init__(self, path: str, dependency_chain=[]):
+    def __init__(self, path: str, dependency_chain=None):
         """Initialize a DepencyConfig.
 
         :raise CircularDependencyException: If there's a circular dependency.
         """
+
+        dependency_chain = dependency_chain or []
 
         self["_path"] = path
         self.dependency_chain = dependency_chain
@@ -36,6 +40,8 @@ class DeploymentConfig(dict):
         self.dependency_chain.append(self.stack)
 
         self.from_stack(self["_path"])
+
+        super().__init__(self)
 
     @property
     def path(self) -> str:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""A program which makes deploying stacks from multiple .yml files a bit simpler."""
+"""A program for easily deploying stacks from multiple YAML files."""
 
 import os
 import sys
@@ -8,11 +8,15 @@ import subprocess
 from typing import List
 from argparse import ArgumentParser
 
-from schema import SchemaError
-
 from depstack._internal.models.deploymentconfig import DeploymentConfig
 
-def deploy(deploymentconfig: DeploymentConfig, target: str, no_deps: bool) -> int:
+
+def deploy(
+    deploymentconfig: DeploymentConfig,
+    target: str,
+    no_deps: bool,
+    dry_run: bool
+) -> int:
     """Deploy a stack and its dependencies.
 
     :param DeploymentConfig deploymentconfig: The root stack to deploy.
@@ -37,7 +41,7 @@ def deploy(deploymentconfig: DeploymentConfig, target: str, no_deps: bool) -> in
         # circular dependencies.
         if target in deploymentconfig["depends"]:
             for dependency in deploymentconfig["depends"][target]:
-                deploy(dependency, target)
+                deploy(dependency, target, no_deps, dry_run)
 
     # Build the shell command for deployment.
     cmd = ["docker", "stack", "deploy"]
@@ -46,8 +50,17 @@ def deploy(deploymentconfig: DeploymentConfig, target: str, no_deps: bool) -> in
     cmd.append(deploymentconfig.stack)
 
     # Deploy the stack.
-    print("Exec: " + " ".join(cmd))
-    return subprocess.run(" ".join(cmd), shell=True, check=False).returncode
+    print("-- " + " ".join(cmd))
+
+    if not dry_run:
+        return subprocess.run(
+            " ".join(cmd),
+            shell=True,
+            check=False
+        ).returncode
+
+    return 0
+
 
 def main(argv: List[str]) -> int:
     """Main entrypoint method.
@@ -64,9 +77,28 @@ def main(argv: List[str]) -> int:
             "multiple interdependent YAML files."
         )
     )
-    ap.add_argument("-n", "--no-deps", action="store_true", help="Don't deploy dependencies.")
-    ap.add_argument("stack", type=str, help="The stack to deploy.")
-    ap.add_argument("target", type=str, help="The target to deploy.")
+    ap.add_argument(
+        "-n",
+        "--no-deps",
+        action="store_true",
+        help="Don't deploy dependencies."
+    )
+    ap.add_argument(
+        "-d",
+        "--dry-run",
+        action="store_true",
+        help="Dry run; only print commands which would be executed."
+    )
+    ap.add_argument(
+        "stack",
+        type=str,
+        help="The stack to deploy."
+    )
+    ap.add_argument(
+        "target",
+        type=str,
+        help="The target to deploy."
+    )
 
     args = ap.parse_args(argv[1:])
 
@@ -84,13 +116,19 @@ def main(argv: List[str]) -> int:
 
     ret = 0
     try:
-        ret = deploy(root, args.target, args.no_deps)
+        ret = deploy(root, args.target, args.no_deps, args.dry_run)
     except ValueError as e:
         print("[ERROR] " + str(e))
         return 1
 
     return ret
 
-if __name__ == "__main__":
+
+def entrypoint():
+    """Python package entrypoint when run as a CLI utility."""
+
     sys.exit(main(sys.argv))
 
+
+if __name__ == "__main__":
+    entrypoint()
