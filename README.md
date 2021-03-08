@@ -1,10 +1,10 @@
-# depstack - A wrapper for easily deploying Docker Swarm stacks with dependencies
+# depswarm - Easily deploy Docker Swarm stacks with dependencies
 
-*depstack* is an opinionated utility command which can be used to deploy Docker
+*depswarm* is an opinionated utility command which can be used to deploy Docker
 Swarm stacks built from multiple `docker-compose` YAML files. The basic idea is
-fairly simple: *depstack* stacks are directories which contain a configuration
+fairly simple: *depswarm* stacks are directories which contain a configuration
 file and the YAML stack snippets for the stack in question. The layout of a
-*depstack* stack is as follows:
+*depswarm* stack is as follows:
 
 ```
 custom-stack/
@@ -15,17 +15,17 @@ custom-stack/
 ```
 
 Here the name of the stack is `custom-stack`. This also the name of the stack.
-*depstack* expects that all stack directories are located in a common root
+*depswarm* expects that all stack directories are located in a common root
 directory. This is required for dependencies to work.
 
 The example stack directory contains two *docker-compose* stack files in
 `stack.d`: `stack-1.yml` and `stack-2.yml`. Ordinarily you might just pass
 the separate stack files to `docker stack deploy` using the `-c` flag, but
-now *depstack* does all of the work instead. *depstack* also provides some
+now *depswarm* does all of the work instead. *depswarm* also provides some
 additinal features which make stack deployment easier.
 
 The directory also contains a file called `deploy.yml`. This is the configuration
-file read by *depstack* itself. In short, it declares the stack snippets of the
+file read by *depswarm* itself. In short, it declares the stack snippets of the
 current stack as well as dependencies on other stacks. The format of the file
 is as follows:
 
@@ -52,23 +52,23 @@ Following is a description of all the keys you can use in a `deploy.yml` file.
 ### depends
 
 This key is used to declare any dependencies the stack has on other stacks.
-When *depstack* encounters dependencies, it deploys the dependency stacks first
+When *depswarm* encounters dependencies, it deploys the dependency stacks first
 before deploying the stack original stack. Each key in `depends` is a deployment
-target which is specified to the *depstack* command when deploying a stack. This
+target which is specified to the *depswarm* command when deploying a stack. This
 enables you to specify different stack dependencies for example when deploying
 to production vs. development. The deployment targets must simply contain a
 list of stacks to deploy.
 
-*depstack* expects that all stack directories are located in a common root
+*depswarm* expects that all stack directories are located in a common root
 directory. Dependencies are deployed in the order they are specified in the
 configuration file.
 
 ### deploy
 
-This key is used to declare the separate YAML files the stack uses. *depstack*
+This key is used to declare the separate YAML files the stack uses. *depswarm*
 calls these files *partials*. All *partials* must be located in a directory
 called `stack.d` at the root of a stack directory. Each key in `deploy` is a
-deployment target which is specified to the *depstack* command when deploying a
+deployment target which is specified to the *depswarm* command when deploying a
 stack. This enables you to specify a different stack composition for example
 when deploying to production vs. development. The deployment targets must simply
 contain a list of file names in `stack.d`.
@@ -80,10 +80,10 @@ duplicating a lot of configuration across stacks.
 
 ## Usage
 
-Below is the help message printed by `depstack -h`.
+Below is the help message printed by `depswarm -h`.
 
 ```
-usage: depstack [-h] [-n] [-d] stack target
+usage: depswarm [-h] [-n] [-d] stack target
 
 Easily deploy Docker Swarm stacks from multiple interdependent YAML files.
 
@@ -97,7 +97,7 @@ optional arguments:
   -d, --dry-run  Dry run; only print commands which would be executed.
 ```
 
-You must run *depstack* in the common root directory where all stack directories
+You must run *depswarm* in the common root directory where all stack directories
 are located. For example, consider the following directory layout:
 
 ```
@@ -113,9 +113,9 @@ are located. For example, consider the following directory layout:
        └── stack-3.yml
 ```
 
-Running `depstack custom-stack-1 prod` in this directory would deploy the `prod`
+Running `depswarm custom-stack-1 prod` in this directory would deploy the `prod`
 target of `custom-stack-1`. If `custom-stack-1` depends on `custom-stack-2`,
-the latter would be deploy before the former.
+the latter would be deployed before the former.
 
 ## Dependencies
 
@@ -127,7 +127,7 @@ the latter would be deploy before the former.
 
 ### Running tests
 
-*depstack* uses [tox](https://tox.readthedocs.io/en/latest/) to automate
+*depswarm* uses [tox](https://tox.readthedocs.io/en/latest/) to automate
 linting and other tasks. Install *tox* with
 
 `pip install tox`
@@ -142,12 +142,12 @@ You can also use `python` in place of `python3` if both are in your *PATH*.
 
 ### CI/CD pipeline
 
-*depstack* uses GitHub Actions for its CI/CD pipeline. Currently the pipeline
+*depswarm* uses GitHub Actions for its CI/CD pipeline. Currently the pipeline
 automatically lints all commits with *pylint* and *pycodestyle*.
 
 ## License
 
-*depstack* is licensed under the BSD 3-clause license. See the file
+*depswarm* is licensed under the BSD 3-clause license. See the file
 `LICENSE` in this repository for more details.
 
 Copyright Eero Talus 2021

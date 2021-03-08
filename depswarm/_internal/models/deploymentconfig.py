@@ -4,7 +4,7 @@ import os
 from yaml import load, SafeLoader
 from schema import Schema, Use, Optional, SchemaError
 
-from depstack._internal.exceptions.deploymentconfigexceptions import \
+from depswarm._internal.exceptions.deploymentconfigexceptions import \
     CircularDependencyException
 
 

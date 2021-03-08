@@ -8,7 +8,7 @@ import subprocess
 from typing import List
 from argparse import ArgumentParser
 
-from depstack._internal.models.deploymentconfig import DeploymentConfig
+from depswarm._internal.models.deploymentconfig import DeploymentConfig
 
 
 def deploy(

@@ -4,14 +4,14 @@ with open("README.md", "r") as f:
     long_desc = f.read()
 
 setuptools.setup(
-    name="depstack",
+    name="depswarm",
     version="0.0.1",
     author="Eero Talus",
     author_email="eero@talus.cc",
     description="Easily deploy Docker Swarm stacks with dependencies.",
     long_description=long_desc,
     long_description_content_type="text/markdown",
-    url="https://github.com/eerotal/depstack",
+    url="https://github.com/eerotal/depswarm",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -25,7 +25,7 @@ setuptools.setup(
     ],
     entry_points={
         "console_scripts": [
-            "depstack = depstack.main:entrypoint"
+            "depswarm = depswarm.main:entrypoint"
         ]
     }
 )
