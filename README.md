@@ -14,9 +14,9 @@ custom-stack/
     └── stack-2.yml
 ```
 
-Here the name of the stack is `custom-stack`. This also the name of the stack.
-*depswarm* expects that all stack directories are located in a common root
-directory. This is required for dependencies to work.
+Here the name of the stack is `custom-stack`. The name of the stack directory
+defines the name of the stack. *depswarm* expects that all stack directories are
+located in a common root directory. This is required for dependencies to work.
 
 The example stack directory contains two *docker-compose* stack files in
 `stack.d`: `stack-1.yml` and `stack-2.yml`. Ordinarily you might just pass
